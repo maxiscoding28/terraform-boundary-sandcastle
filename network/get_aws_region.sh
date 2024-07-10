@@ -1,0 +1,1 @@
+aws configure get region | echo '{"region": "'"$(aws configure get region)"'"}' | jq
