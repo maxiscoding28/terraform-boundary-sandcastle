@@ -1,6 +1,6 @@
 #!/bin/bash
-yum update
-yum install postgresql15.x86_64 -y
+dnf install postgresql15.x86_64 -y
+
 
 # Create boundary user
 useradd boundary
@@ -16,23 +16,20 @@ cp -R /home/ec2-user/.ssh/authorized_keys /home/boundary/.ssh/authorized_keys
 chown boundary:boundary /home/boundary/.ssh/authorized_keys
 chmod 700 /home/boundary/.ssh/authorized_keys
 
-# Install Vault
-curl --silent -Lo /tmp/boundary.zip https://releases.hashicorp.com/boundary/${boundary_version}/vault_${boundary_version}_linux_amd64.zip
+mkdir /etc/boundary.d
+chown boundary:boundary /etc/boundary.d
+
+curl --silent -Lo /tmp/boundary.zip https://releases.hashicorp.com/boundary/${boundary_version}/boundary_${boundary_version}_linux_amd64.zip
 unzip /tmp/boundary.zip
 mv boundary /usr/bin
 rm -f /tmp/boundary.zip
 
-# Create config
-mkdir /etc/boundary.d
-# Create license file
-echo ${boundary_license} > /etc/boundary.d/license.hclic
-# Create vault config
 cat > /etc/boundary.d/controller.hcl << EOF
 controller {
   name = "boundary_sandcastle_controller_1"
   description = "boundary_sandcastle_controller_1"
   database {
-    url = "postgresql://boundary:1234@10.0.1.11:5432/postgres"
+    url = "postgresql://boundary:1234@${postgresql_ip}:5432/postgres"
     max_open_connections = 5
   }
   license = "02MV4UU43BK5HGYYTOJZWFQMTMNNEWU33JJV5GOMSNKRGTATL2JV2FSV2ZGVMVGMDXJZCGQ2KMK5MTKTT2IV2E2V2SNFMVOWLZLJDU26SZKRJGQSLJO5UVSM2WPJSEOOLULJMEUZTBK5IWST3JJEZFS3KJPFHEOSTILJUTANCNNJATITCUJJUVSVCBORNFOSTJJVBTC3COKRVTATTKMRUE26THGRHHUQLJJRBUU4DCNZHDAWKXPBZVSWCSOBRDENLGMFLVC2KPNFEXCSLJO5UWCWCOPJSFOVTGMRDWY5C2KNETMSLKJF3U22SRORGUIY3UJVKEEVKNKRRTMTLKJE3E26SVOVGXUTJUJZCESMCPIRLGCSLJO5UWGM2SNBRW4UTGMRDWY5C2KNETMSLKJF3U22SRORGUIY3UJVKEEVKNIRATMTKEIE3E2RCCMFEWS53JLJMGQ53BLBFGQZCHNR3GE3BZGBQVOMLMJFVG62KNNJAXSTTZGB4E22JQPJGVMULXJVCG652NIRXXOTKGN5UUYQ2KGBNFQSTUMFLTK2DEI5WHMYTMHEYGCVZRNREWU33JJVVEC6KPIMYHQTLJGB5E2RSRO5GUI33XJVCG652NIZXWSTCDJJ3WG3JZNNSFOTRQJFVG62KZNU4TCYTNKJUGG3TLNFGEGSTNMJDUM3TDPFETMZLZJJWFUR3MGBQVOOLVJFVG62K2K42TAWSYJJ3WG3LMPJNFGSLTJFXE44TELBGWST3MONUWGM2SNBRG2UTIMNWVC5DENJCWSTCDJJ3WESCWPJGFQWLYJFWDCOLGKE6T2LRXNRRVIODSLFDWWSCOK5JVIS3UINUEISKUJZIFCSKDFNKG6MLXHBZTKWTXMJDGQRSJF5HXGZLCI43VCK2HIR5GMN3YKBWW6U3CORHHEVJLJNFEUV3GN5LEUWLOOVEFGVBYIVKU2RC2GFSEC23DME2GIVRQGMZTQUDXNVLGYYLWJJIDI4CKPBEUSOKEGZKUMTCVMFLFA2TLK5FHIY2EGZYGC3BWN5HWMR3OJMZHUUCLJJJG2R2IKYZWKWTXOFDGKK3PG5VS64ZLIFKE42CQLJTVGL2LKZMWOL2LFNWEOUDXJQ3WUQTYJE3UOT3BNM3FKYLJMFEG6ZLLGBJFI3ZXGJCFCPJ5"
@@ -53,9 +50,6 @@ listener "tcp" {
   purpose = "cluster"
 }
 EOF
-
-
-boundary database init -config=/etc/boundary.d/controller.hcl > /home/boundary/db-init.txt
 
 cat > /etc/systemd/system/boundary.service << EOF
 [Unit]
@@ -92,5 +86,8 @@ LimitCORE=0
 [Install]
 WantedBy=multi-user.target
 EOF
+
+sleep 5
+boundary database init -config=/etc/boundary.d/controller.hcl > /home/boundary/db-init.txt
 
 systemctl start boundary

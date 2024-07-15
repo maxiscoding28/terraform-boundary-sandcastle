@@ -18,4 +18,6 @@ module "server" {
   subnet_id        = module.network.subnets[0]
   security_group   = module.security.security_group_id
   key_name         = var.ec2_key_pair_name
+  boundary_version = var.boundary_version
+  boundary_license = var.boundary_license
 }

@@ -34,3 +34,11 @@ variable "ec2_key_pair_name" {
   type    = string
   default = ""
 }
+variable "boundary_version" {
+  type = string
+  default = "0.16.2+ent"
+}
+variable "boundary_license" {
+  type = string
+  default = ""
+}

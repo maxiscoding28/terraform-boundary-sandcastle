@@ -1,12 +1,13 @@
+#!/bin/bash
+
 dnf install postgresql15.x86_64 postgresql15-server postgresql15-contrib -y
 postgresql-setup --initdb
 
 cp /var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf.example
 
 cat > /var/lib/pgsql/data/pg_hba.conf <<EOF
-hostnossl postgres boundary 0.0.0.0/0 trust
-local   all             all                                     peer
-host    all             all             127.0.0.1/32            ident
+local   all             all                                     trust
+host    all             all             0.0.0.10/0            trust
 host    all             all             ::1/128                 ident
 local   replication     all                                     peer
 host    replication     all             127.0.0.1/32            ident
@@ -33,11 +34,7 @@ lc_time = 'C.UTF-8'
 default_text_search_config = 'pg_catalog.english'
 EOF
 
-
 systemctl start postgresql
 systemctl enable postgresql
-sudo -u postgres psql
-
-CREATE USER boundary WITH PASSWORD '1234';
-GRANT ALL ON SCHEMA PUBLIC TO boundary;
-ALTER ROLE boundary superuser;
+sleep 2
+sudo -u postgres psql -c "CREATE USER boundary WITH PASSWORD '1234';GRANT ALL ON SCHEMA PUBLIC TO boundary;ALTER ROLE boundary superuser;"
