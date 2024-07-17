@@ -24,6 +24,13 @@ resource "aws_vpc_security_group_ingress_rule" "boundary_sandcastle_psql_control
   ip_protocol       = "tcp"
   to_port           = 5432
 }
+resource "aws_vpc_security_group_ingress_rule" "boundary_worker_to_controller" {
+  security_group_id = aws_security_group.boundary_sandcastle.id
+  referenced_security_group_id = aws_security_group.boundary_sandcastle.id
+  from_port         = 9201
+  ip_protocol       = "tcp"
+  to_port           = 9201
+}
 resource "aws_vpc_security_group_ingress_rule" "boundary_sandcastle_local_api" {
   depends_on        = [data.http.get_local_ip]
   security_group_id = aws_security_group.boundary_sandcastle.id
@@ -31,4 +38,12 @@ resource "aws_vpc_security_group_ingress_rule" "boundary_sandcastle_local_api" {
   from_port         = 9200
   ip_protocol       = "tcp"
   to_port           = 9200
+}
+resource "aws_vpc_security_group_ingress_rule" "boundary_sandcastle_local_http" {
+  depends_on        = [data.http.get_local_ip]
+  security_group_id = aws_security_group.boundary_sandcastle.id
+  cidr_ipv4         = "${chomp(data.http.get_local_ip.response_body)}/32"
+  from_port         = 80
+  ip_protocol       = "tcp"
+  to_port           = 80
 }
