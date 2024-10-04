@@ -8,7 +8,7 @@ data "aws_ami" "boundary_sandcastle" {
 }
 resource "aws_instance" "boundary_postgresql" {
   ami                    = data.aws_ami.boundary_sandcastle.id
-  instance_type          = "t3.micro"
+  instance_type          = "t2.small"
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group]
   key_name               = var.key_name
@@ -18,7 +18,7 @@ resource "aws_instance" "boundary_postgresql" {
 resource "aws_instance" "boundary_controller" {
   depends_on             = [aws_instance.boundary_postgresql]
   ami                    = data.aws_ami.boundary_sandcastle.id
-  instance_type          = "t3.micro"
+  instance_type          = "t2.small"
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group]
   key_name               = var.key_name
@@ -32,7 +32,7 @@ resource "aws_instance" "boundary_controller" {
 resource "aws_instance" "boundary_worker" {
   depends_on             = [aws_instance.boundary_controller]
   ami                    = data.aws_ami.boundary_sandcastle.id
-  instance_type          = "t3.micro"
+  instance_type          = "t2.small"
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group]
   key_name               = var.key_name
@@ -45,7 +45,7 @@ resource "aws_instance" "boundary_worker" {
 resource "aws_instance" "boundary_target" {
   depends_on             = [aws_instance.boundary_worker]
   ami                    = data.aws_ami.boundary_sandcastle.id
-  instance_type          = "t3.micro"
+  instance_type          = "t2.small"
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group]
   key_name               = var.key_name

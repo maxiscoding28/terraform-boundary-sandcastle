@@ -28,7 +28,7 @@ variable "ami_owners" {
 }
 variable "ami_name_filters" {
   type    = list(string)
-  default = ["al2023-ami-2023.4.20240611.0-kernel-6.1-x86_64"]
+  default = ["al2023-ami-2023.5.20240903.0-kernel-6.1-x86_64"]
 }
 variable "ec2_key_pair_name" {
   type    = string
